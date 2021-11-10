@@ -80,7 +80,6 @@ public class UsuarioResource {
                 JWTVerifier verifier = JWT.require(algorithm).build();
                 DecodedJWT decodedJWT = verifier.verify(refresh_token);
                 String username = decodedJWT.getSubject();
-                log.info("O USERNAME DO REFRESHTOKEN {}",username);
                 Usuario usuario = usuarioService.buscarUsuarioPeloEmail(username);
 
                 String access_token = JWT.create()
@@ -88,7 +87,7 @@ public class UsuarioResource {
                 .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
                 .withIssuer(request.getRequestURL().toString())
                 .withClaim("permissoes", usuario.getPermisssoes().stream().map(Permissao::getDescricao).collect(Collectors.toList()))
-                .sign(algorithm);
+                .sign(algorithm);                
 
                 Map<String, String> tokens = new HashMap<>();
                 tokens.put("access_token", access_token);
@@ -108,6 +107,8 @@ public class UsuarioResource {
         } else {
             throw new RuntimeException("Refresh Token está ausente");
         }
+
+        
 
     }
 

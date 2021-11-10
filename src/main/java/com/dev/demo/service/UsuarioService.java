@@ -21,12 +21,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
-@Slf4j
-public class UsuarioService implements UserDetailsService{
+public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -45,7 +43,7 @@ public class UsuarioService implements UserDetailsService{
         return resultUser.get();
     }
 
-    public Usuario salvarUsuario(Usuario usuario){
+    public Usuario salvarUsuario(Usuario usuario) {
 
         usuario.setSenha(encoder.encode(usuario.getSenha()));
         return usuarioRepository.save(usuario);
@@ -81,13 +79,9 @@ public class UsuarioService implements UserDetailsService{
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
         Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(email);
-        log.info("Usuário contem no banco: {} ", usuarioOptional.get().getEmail());
 
         Usuario usuario = usuarioOptional
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário e/ou senha inválidos"));
-
-        log.info("Usuário contem no banco: {} ", usuario);
-
 
         return new User(usuario.getEmail(), usuario.getSenha(), getPermissoes(usuario));
 
@@ -96,10 +90,9 @@ public class UsuarioService implements UserDetailsService{
     private Collection<? extends GrantedAuthority> getPermissoes(Usuario usuario) {
 
         Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-        usuario.getPermisssoes()
-                .forEach(p -> {
-                    authorities.add(new SimpleGrantedAuthority(p.getDescricao().toUpperCase()));
-                });
+        usuario.getPermisssoes().forEach(p -> {
+            authorities.add(new SimpleGrantedAuthority(p.getDescricao().toUpperCase()));
+        });
 
         return authorities;
     }

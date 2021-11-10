@@ -18,6 +18,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,9 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-   
+    private AuthenticationManager authenticationManager;     
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -45,9 +44,6 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
         String username = request.getParameter("email");
         String password = request.getParameter("senha");
-
-        log.info("Username para logar: {} ", username);
-        log.info("Senha para logar: {} ", password);
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,
                 password);
@@ -60,21 +56,23 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             Authentication authentication) throws IOException, ServletException {
 
         User user = (User) authentication.getPrincipal();
-        log.info("Usuario principal {}", user);
-        log.info("Username do acess token {}", user.getUsername());
+        Date currenteDate = new Date();
+        Date expiracaoToken = DateUtils.addDays(currenteDate, + 30);
 
         Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
 
         String access_token = JWT.create()
             .withSubject(user.getUsername())
-            .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
+            .withExpiresAt(expiracaoToken)
             .withIssuer(request.getRequestURL().toString())
             .withClaim("permissoes", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
-            .sign(algorithm);
+            .sign(algorithm);            
+
+            log.info("DATA:" + expiracaoToken); 
 
         String refresh_token = JWT.create()
             .withSubject(user.getUsername())
-            .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
+            .withExpiresAt(expiracaoToken)
             .withIssuer(request.getRequestURL().toString())
             .sign(algorithm);
 
