@@ -11,7 +11,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CategoriaService {
+public class CategoriaService 
 
     @Autowired
     private CategoriaRepository categoriaRepository;
